@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مدیریت پروژه و تسک</title>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#161b22; --bg3:#1c2333; --bg4:#232b3d;
+    --border:#2d3748; --border2:#3a4560;
+    --text:#e6edf3; --text2:#9aa5b8; --text3:#6b7488;
+    --accent:#6c8cff; --accent2:#8b5cf6;
+    --green:#3fb950; --yellow:#d29922; --orange:#f0883e; --red:#f85149;
+    --radius:14px; --shadow:0 8px 30px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Vazirmatn','Vazir','Segoe UI',Tahoma,sans-serif;
+    background:radial-gradient(1200px 600px at 90% -10%, #1a2340 0%, var(--bg) 55%);
+    color:var(--text); min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#2d3748;border-radius:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  button{font-family:'Vazirmatn','Vazir',sans-serif;cursor:pointer;border:none;background:none;color:inherit}
+  input,select,textarea{font-family:'Vazirmatn','Vazir',sans-serif;color:var(--text)}
+
+  /* ---------- Layout ---------- */
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:250px;flex-shrink:0;background:linear-gradient(180deg,#12161f,#0e1219);
+    border-left:1px solid var(--border);padding:22px 16px;display:flex;flex-direction:column;gap:8px;
+    position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 20px;font-weight:800;font-size:18px}
+  .brand .logo{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-size:17px;box-shadow:0 6px 16px rgba(108,140,255,.35)
+  }
+  .brand small{display:block;font-size:11px;color:var(--text3);font-weight:500}
+  .nav-btn{
+    display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:11px;
+    color:var(--text2);font-size:14px;font-weight:500;transition:.18s;text-align:right;width:100%
+  }
+  .nav-btn:hover{background:var(--bg3);color:var(--text)}
+  .nav-btn.active{background:linear-gradient(90deg,rgba(108,140,255,.18),rgba(139,92,246,.10));color:#fff;border:1px solid rgba(108,140,255,.35)}
+  .nav-btn .ico{font-size:16px;width:20px;text-align:center}
+  .nav-btn .badge{
+    margin-right:auto;background:var(--accent);color:#fff;font-size:11px;
+    min-width:20px;height:20px;border-radius:20px;display:grid;place-items:center;padding:0 6px
+  }
+  .side-sep{height:1px;background:var(--border);margin:10px 0}
+  .side-foot{margin-top:auto;font-size:11px;color:var(--text3);padding:8px;line-height:1.7}
+
+  .main{flex:1;padding:26px 30px 60px;min-width:0}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+  .topbar h1{font-size:21px;font-weight:800}
+  .topbar h1 span{color:var(--text3);font-size:13px;font-weight:500;display:block;margin-top:3px}
+  .top-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:11px;
+    font-size:13.5px;font-weight:600;transition:.18s;border:1px solid transparent;white-space:nowrap
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 6px 18px rgba(108,140,255,.3)}
+  .btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .btn-ghost{background:var(--bg3);border-color:var(--border);color:var(--text2)}
+  .btn-ghost:hover{border-color:var(--border2);color:var(--text);background:var(--bg4)}
+  .btn-danger{background:rgba(248,81,73,.12);border-color:rgba(248,81,73,.4);color:var(--red)}
+  .btn-danger:hover{background:rgba(248,81,73,.22)}
+  .btn-sm{padding:7px 12px;font-size:12.5px;border-radius:9px}
+
+  /* ---------- Cards ---------- */
+  .card{background:linear-gradient(180deg,var(--bg2),#131822);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:22px}
+  .stat{
+    background:linear-gradient(180deg,var(--bg2),#131822);border:1px solid var(--border);
+    border-radius:var(--radius);padding:18px;position:relative;overflow:hidden
+  }
+  .stat::after{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent);opacity:.8}
+  .stat.g::after{background:var(--green)} .stat.y::after{background:var(--yellow)}
+  .stat.r::after{background:var(--red)} .stat.o::after{background:var(--orange)}
+  .stat .lbl{font-size:12.5px;color:var(--text2);margin-bottom:9px;display:flex;align-items:center;gap:7px}
+  .stat .val{font-size:27px;font-weight:800;letter-spacing:-.5px}
+  .stat .sub{font-size:11.5px;color:var(--text3);margin-top:5px}
+
+  .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+  @media(max-width:1050px){.grid-2{grid-template-columns:1fr}}
+
+  .section-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--text)}
+  .section-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+  /* ---------- Progress ---------- */
+  .proj-progress{margin-bottom:16px}
+  .proj-progress:last-child{margin-bottom:0}
+  .pp-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+  .pp-head .name{font-weight:600} .pp-head .pct{color:var(--text2);font-size:12px}
+  .bar{height:8px;background:var(--bg4);border-radius:8px;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s}
+  .bar.g > i{background:linear-gradient(90deg,#2ea043,#3fb950)}
+  .bar.r > i{background:linear-gradient(90deg,#da3633,#f85149)}
+  .bar.y > i{background:linear-gradient(90deg,#bb8009,#d29922)}
+
+  /* ---------- Task list ---------- */
+  .task-item{
+    display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border-radius:12px;
+    background:var(--bg3);border:1px solid var(--border);margin-bottom:10px;transition:.16s
+  }
+  .task-item:hover{border-color:var(--border2);background:var(--bg4)}
+  .task-item.done{opacity:.55}
+  .task-item.done .t-title{text-decoration:line-through}
+  .chk{
+    width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border2);
+    display:grid;place-items:center;flex-shrink:0;margin-top:2px;transition:.15s;font-size:12px;color:transparent
+  }
+  .chk:hover{border-color:var(--accent)}
+  .task-item.done .chk{background:var(--green);border-color:var(--green);color:#fff}
+  .t-body{flex:1;min-width:0}
+  .t-title{font-size:14px;font-weight:600;margin-bottom:5px;word-break:break-word}
+  .t-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--text3);align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+  .p-high{background:rgba(248,81,73,.14);color:#ff8a82}
+  .p-med{background:rgba(210,153,34,.14);color:#e3b341}
+  .p-low{background:rgba(63,185,80,.14);color:#56d364}
+  .dl{display:inline-flex;align-items:center;gap:4px}
+  .dl.over{color:var(--red)} .dl.soon{color:var(--orange)}
+  .proj-tag{padding:2px 8px;border-radius:6px;font-size:10.5px;background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
+  .t-actions{display:flex;gap:4px;flex-shrink:0}
+  .icon-btn{
+    width:30px;height:30px;border-radius:8px;display:grid;place-items:center;
+    color:var(--text3);font-size:13px;transition:.15s
+  }
+  .icon-btn:hover{background:var(--bg2);color:var(--text)}
+  .icon-btn.del:hover{background:rgba(248,81,73,.15);color:var(--red)}
+
+  /* ---------- Projects ---------- */
+  .proj-card{
+    background:linear-gradient(180deg,var(--bg2),#131822);border:1px solid var(--border);
+    border-radius:var(--radius);padding:18px;position:relative;overflow:hidden
+  }
+  .proj-card::before{content:"";position:absolute;top:0;right:0;left:0;height:3px;background:var(--pc,var(--accent))}
+  .pc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}
+  .pc-name{font-size:15px;font-weight:700;word-break:break-word}
+  .pc-desc{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.6}
+  .pc-stats{display:flex;gap:14px;font-size:12px;color:var(--text2);margin:12px 0 10px;flex-wrap:wrap}
+  .pc-stats b{color:var(--text);font-weight:700}
+  .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+
+  /* ---------- Calendar ---------- */
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+  .cal-nav{display:flex;gap:8px;align-items:center}
+  .cal-month{font-size:17px;font-weight:800;min-width:150px;text-align:center}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+  .cal-dow{text-align:center;font-size:12px;color:var(--text3);font-weight:600;padding:8px 0}
+  .cal-day{
+    min-height:96px;background:var(--bg3);border:1px solid var(--border);border-radius:11px;
+    padding:7px;font-size:12px;transition:.15s;position:relative;overflow:hidden
+  }
+  .cal-day:hover{border-color:var(--border2)}
+  .cal-day.other{opacity:.32}
+  .cal-day.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+  .cal-day .dnum{font-weight:700;font-size:13px;color:var(--text2);margin-bottom:5px;display:flex;justify-content:space-between}
+  .cal-day.today .dnum{color:var(--accent)}
+  .cal-ev{
+    font-size:10.5px;padding:3px 6px;border-radius:6px;margin-bottom:3px;background:rgba(108,140,255,.16);
+    color:#a9bcff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--accent)
+  }
+  .cal-ev.high{background:rgba(248,81,73,.16);color:#ff9c96;border-color:var(--red)}
+  .cal-ev.med{background:rgba(210,153,34,.16);color:#e3b341;border-color:var(--yellow)}
+  .cal-ev.low{background:rgba(63,185,80,.16);color:#7ee787;border-color:var(--green)}
+  .cal-ev.done{opacity:.5;text-decoration:line-through}
+  .cal-more{font-size:10px;color:var(--text3);padding:2px 4px}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(5,8,14,.72);backdrop-filter:blur(6px);
+    display:none;place-items:center;z-index:100;padding:20px;overflow-y:auto
+  }
+  .overlay.open{display:grid}
+  .modal{
+    background:linear-gradient(180deg,#1a2030,#141926);border:1px solid var(--border2);
+    border-radius:18px;width:100%;max-width:520px;padding:26px;box-shadow:var(--shadow);
+    animation:pop .22s ease
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+  .modal h3{font-size:17px;margin-bottom:20px;display:flex;align-items:center;gap:9px}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:12.5px;color:var(--text2);margin-bottom:7px;font-weight:600}
+  .field input,.field select,.field textarea{
+    width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    padding:11px 13px;font-size:13.5px;transition:.15s;outline:none
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,140,255,.15)}
+  .field textarea{resize:vertical;min-height:70px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal-foot{display:flex;gap:10px;justify-content:flex-start;margin-top:22px}
+  .hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+  /* date picker شمسی */
+  .date-wrap{position:relative}
+  .date-display{
+    width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    padding:11px 13px;font-size:13.5px;text-align:right;cursor:pointer;display:flex;justify-content:space-between;align-items:center
+  }
+  .date-display:hover{border-color:var(--border2)}
+  .dp{
+    position:absolute;top:calc(100% + 8px);right:0;z-index:20;background:#1b2231;
+    border:1px solid var(--border2);border-radius:14px;padding:14px;width:290px;
+    box-shadow:var(--shadow);display:none
+  }
+  .dp.open{display:block}
+  .dp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .dp-head b{font-size:14px}
+  .dp-nav{display:flex;gap:4px}
+  .dp-nav button{width:28px;height:28px;border-radius:8px;background:var(--bg3);display:grid;place-items:center;font-size:14px}
+  .dp-nav button:hover{background:var(--bg4)}
+  .dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .dp-dow{text-align:center;font-size:10.5px;color:var(--text3);padding:4px 0;font-weight:600}
+  .dp-day{
+    aspect-ratio:1;display:grid;place-items:center;font-size:12.5px;border-radius:8px;
+    cursor:pointer;color:var(--text2);transition:.12s
+  }
+  .dp-day:hover{background:var(--bg4);color:var(--text)}
+  .dp-day.other{opacity:.3}
+  .dp-day.sel{background:var(--accent);color:#fff;font-weight:700}
+  .dp-day.today{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+  .dp-foot{display:flex;gap:8px;margin-top:10px}
+  .dp-foot button{flex:1;padding:7px;border-radius:8px;background:var(--bg3);font-size:12px;color:var(--text2)}
+  .dp-foot button:hover{background:var(--bg4);color:var(--text)}
+
+  /* ---------- misc ---------- */
+  .empty{
+    text-align:center;padding:46px 20px;color:var(--text3);font-size:13.5px;line-height:2
+  }
+  .empty .big{font-size:38px;margin-bottom:10px;opacity:.5}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+  .toolbar input,.toolbar select{
+    background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+    padding:9px 13px;font-size:13px;outline:none
+  }
+  .toolbar input{flex:1;min-width:180px}
+  .toolbar input:focus,.toolbar select:focus{border-color:var(--accent)}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .chip{
+    padding:7px 14px;border-radius:20px;font-size:12.5px;background:var(--bg3);
+    border:1px solid var(--border);color:var(--text2);transition:.15s;font-weight:500
+  }
+  .chip:hover{border-color:var(--border2);color:var(--text)}
+  .chip.active{background:rgba(108,140,255,.18);border-color:var(--accent);color:#a9bcff}
+  .view{display:none} .view.active{display:block;animation:fade .25s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .toast{
+    position:fixed;bottom:24px;left:24px;background:#1f2937;border:1px solid var(--border2);
+    padding:13px 20px;border-radius:12px;font-size:13px;box-shadow:var(--shadow);z-index:200;
+    transform:translateY(90px);opacity:0;transition:.3s;display:flex;align-items:center;gap:9px
+  }
+  .toast.show{transform:none;opacity:1}
+  .toast.ok{border-color:rgba(63,185,80,.5)} .toast.err{border-color:rgba(248,81,73,.5)}
+  @media(max-width:820px){
+    .app{flex-direction:column}
+    .sidebar{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;padding:12px;gap:6px;align-items:center}
+    .brand{padding:0 8px} .brand small{display:none}
+    .side-sep,.side-foot{display:none}
+    .nav-btn{white-space:nowrap;width:auto;padding:9px 13px}
+    .main{padding:18px 14px 50px}
+    .field-row{grid-template-columns:1fr}
+    .cal-day{min-height:72px;font-size:11px}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">◈</div>
+      <div>تسک‌یار<small>مدیریت پروژه و تسک</small></div>
+    </div>
+    <button class="nav-btn active" data-view="dashboard"><span class="ico">▦</span> داشبورد</button>
+    <button class="nav-btn" data-view="projects"><span class="ico">◫</span> پروژه‌ها <span class="badge" id="navProjCount">0</span></button>
+    <button class="nav-btn" data-view="tasks"><span class="ico">✓</span> تسک‌ها <span class="badge" id="navTaskCount">0</span></button>
+    <button class="nav-btn" data-view="calendar"><span class="ico">▤</span> تقویم</button>
+    <div class="side-sep"></div>
+    <div class="side-foot">
+      تاریخ امروز:<br><b id="todayStr" style="color:var(--text2)"></b>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <h1 id="pageTitle">داشبورد <span id="pageSub">نمای کلی وضعیت کارها</span></h1>
+      <div class="top-actions">
+        <button class="btn btn-ghost" id="btnNewProject">＋ پروژه جدید</button>
+        <button class="btn btn-primary" id="btnNewTask">＋ تسک جدید</button>
+      </div>
+    </div>
+
+    <!-- ========== DASHBOARD ========== -->
+    <section class="view active" id="view-dashboard">
+      <div class="stat-grid">
+        <div class="stat"><div class="lbl">◫ کل پروژه‌ها</div><div class="val" id="sProj">0</div><div class="sub" id="sProjSub">—</div></div>
+        <div class="stat y"><div class="lbl">✓ کل تسک‌ها</div><div class="val" id="sTask">0</div><div class="sub" id="sTaskSub">—</div></div>
+        <div class="stat g"><div class="lbl">✔ انجام‌شده</div><div class="val" id="sDone">0</div><div class="sub" id="sDoneSub">—</div></div>
+        <div class="stat r"><div class="lbl">⏰ عقب‌افتاده</div><div class="val" id="sOver">0</div><div class="sub" id="sOverSub">—</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-title"><span class="dot"></span> تسک‌های نزدیک / فوری</div>
+          <div id="upcomingTasks"></div>
+        </div>
+        <div class="card">
+          <div class="section-title"><span class="dot"></span> پیشرفت پروژه‌ها</div>
+          <div id="projectProgress"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== PROJECTS ========== -->
+    <section class="view" id="view-projects">
+      <div class="toolbar">
+        <input type="text" id="projSearch" placeholder="جستجوی پروژه…">
+      </div>
+      <div class="proj-grid" id="projectsGrid"></div>
+    </section>
+
+    <!-- ========== TASKS ========== -->
+    <section class="view" id="view-tasks">
+      <div class="toolbar">
+        <input type="text" id="taskSearch" placeholder="جستجوی تسک…">
+        <select id="filterProject"><option value="">همه پروژه‌ها</option></select>
+        <select id="filterPriority">
+          <option value="">همه اولویت‌ها</option>
+          <option value="high">بالا</option>
+          <option value="med">متوسط</option>
+          <option value="low">پایین</option>
+        </select>
+        <select id="filterStatus">
+          <option value="">همه وضعیت‌ها</option>
+          <option value="open">باز</option>
+          <option value="done">انجام‌شده</option>
+          <option value="over">عقب‌افتاده</option>
+        </select>
+      </div>
+      <div class="chips" id="taskSortChips">
+        <button class="chip active" data-sort="deadline">ترتیب ددلاین</button>
+        <button class="chip" data-sort="priority">ترتیب اولویت</button>
+        <button class="chip" data-sort="created">تاریخ ایجاد</button>
+      </div>
+      <div id="tasksList"></div>
+    </section>
+
+    <!-- ========== CALENDAR ========== -->
+    <section class="view" id="view-calendar">
+      <div class="card">
+        <div class="cal-head">
+          <div class="cal-nav">
+            <button class="icon-btn" id="calPrev" title="ماه قبل">›</button>
+            <div class="cal-month" id="calMonthLabel"></div>
+            <button class="icon-btn" id="calNext" title="ماه بعد">‹</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="calToday">امروز</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ========== MODAL: PROJECT ========== -->
+<div class="overlay" id="modalProject">
+  <div class="modal">
+    <h3>◫ پروژه جدید</h3>
+    <div class="field">
+      <label>نام پروژه *</label>
+      <input type="text" id="pName" placeholder="مثلاً: بازطراحی سایت">
+    </div>
+    <div class="field">
+      <label>توضیح</label>
+      <textarea id="pDesc" placeholder="توضیح کوتاه درباره پروژه…"></textarea>
+    </div>
+    <div class="field">
+      <label>رنگ پروژه</label>
+      <select id="pColor">
+        <option value="#6c8cff">آبی</option>
+        <option value="#8b5cf6">بنفش</option>
+        <option value="#3fb950">سبز</option>
+        <option value="#d29922">زرد</option>
+        <option value="#f0883e">نارنجی</option>
+        <option value="#f85149">قرمز</option>
+        <option value="#14b8a6">فیروزه‌ای</option>
+        <option value="#ec4899">صورتی</option>
+      </select>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" id="saveProject">ذخیره پروژه</button>
+      <button class="btn btn-ghost" data-close="modalProject">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: TASK ========== -->
+<div class="overlay" id="modalTask">
+  <div class="modal">
+    <h3>✓ تسک جدید</h3>
+    <div class="field">
+      <label>عنوان تسک *</label>
+      <input type="text" id="tTitle" placeholder="مثلاً: نوشتن مستندات API">
+    </div>
+    <div class="field">
+      <label>پروژه *</label>
+      <select id="tProject"></select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>اولویت</label>
+        <select id="tPriority">
+          <option value="high">بالا</option>
+          <option value="med" selected>متوسط</option>
+          <option value="low">پایین</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>ددلاین (شمسی)</label>
+        <div class="date-wrap">
+          <div class="date-display" id="tDateDisplay"><span id="tDateText">انتخاب تاریخ</span><span style="color:var(--text3)">▾</span></div>
+          <div class="dp" id="tDatePicker">
+            <div class="dp-head">
+              <button class="icon-btn" id="dpPrev">›</button>
+              <b id="dpLabel"></b>
+              <button class="icon-btn" id="dpNext">‹</button>
+            </div>
+            <div class="dp-grid" id="dpGrid"></div>
+            <div class="dp-foot">
+              <button id="dpToday">امروز</button>
+              <button id="dpClear">پاک کردن</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>توضیح</label>
+      <textarea id="tDesc" placeholder="جزئیات بیشتر…"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" id="saveTask">ذخیره تسک</button>
+      <button class="btn btn-ghost" data-close="modalTask">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: CONFIRM DELETE ========== -->
+<div class="overlay" id="modalConfirm">
+  <div class="modal" style="max-width:400px">
+    <h3>⚠ حذف</h3>
+    <p id="confirmMsg" style="font-size:13.5px;color:var(--text2);line-height:1.9;margin-bottom:6px"></p>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="confirmYes">بله، حذف کن</button>
+      <button class="btn btn-ghost" data-close="modalConfirm">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==========================================================
+   1) کتابخانه‌ی تقویم شمسی (جلالی) — الگوریتم استاندارد
+   ========================================================== */
+const J = (() => {
+  const breaks = [-61,9,38,199,426,686,756,818,1111,1181,1210,1635,2060,2097,2192,2262,2324,2394,2456,3178];
+  function div(a,b){return ~~(a/b)}
+  function jalCal(jy){
+    let bl = breaks.length, gy = jy+621, leapJ = -14, jp = breaks[0], jm, jump=0, leap, n, i;
+    if (jy < jp || jy >= breaks[bl-1]) throw new Error('Invalid Jalali year');
+    for(i=1;i<bl;i++){
+      jm = breaks[i]; jump = jm - jp;
+      if (jy < jm) break;
+      leapJ += div(jump,33)*8 + div(jump%33,4);
+      jp = jm;
+    }
+    n = jy - jp;
+    leapJ += div(n,33)*8 + div((n%33)+3,4);
+    if (jump%33===4 && jump-n===4) leapJ++;
+    let leapG = div(gy,4) - div((div(gy,100)+1)*3,4) - 150;
+    let march = 20 + leapJ - leapG;
+    if (jump - n < 6) n = n - jump + div(jump+4,33)*33;
+    leap = (((n+1)%33)-1)%4;
+    if (leap === -1) leap = 4;
+    return {leap: leap, gy: gy, march: march};
+  }
+  function j2d(jy,jm,jd){
+    const r = jalCal(jy);
+    return g2d(r.gy,3,r.march) + (jm-1)*31 - div(jm,7)*(jm-7) + jd - 1;
+  }
+  function d2j(jdn){
+    let gy = d2g(jdn).gy, jy = gy-621, r = jalCal(jy), jdn1f = g2d(gy,3,r.march), jd, jm, k;
+    k = jdn - jdn1f;
+    if (k >= 0){
+      if (k <= 185){ jm = 1 + div(k,31); jd = (k%31)+1; return {jy,jm,jd}; }
+      else k -= 186;
+    } else {
+      jy -= 1; k += 179;
+      if (r.leap === 1) k += 1;
+    }
+    jm = 7 + div(k,30); jd = (k%30)+1;
+    return {jy,jm,jd};
+  }
+  function g2d(gy,gm,gd){
+    let d = div((gy+div(gm-8,6)+100100)*1461,4) + div(153*((gm+9)%12)+2,5) + gd - 34840408;
+    d = d - div(div(gy+100100+div(gm-8,6),100)*3,4) + 752;
+    return d;
+  }
+  function d2g(jdn){
+    let j, i, gd, gm, gy;
+    j = 4*jdn + 139361631;
+    j = j + div(div(4*jdn+183187720,146097)*3,4)*4 - 3908;
+    i = div((j%1461),4)*5 + 308;
+    gd = div((i%153),5) + 1;
+    gm = (div(i,153)%12) + 1;
+    gy = div(j,1461) - 100100 + div(8-gm,6);
+    return {gy,gm,gd};
+  }
+  const monthNames = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  const dowNames = ['ش','ی','د','س','چ','پ','ج'];
+  const fullDow = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+  function monthLen(jy,jm){ return jm<=6?31: (jm<=11?30: (isLeap(jy)?30:29)); }
+  function isLeap(jy){ return jalCal(jy).leap === 0; }
+  function todayJ(){ const t = new Date(); return d2j(g2d(t.getFullYear(),t.getMonth()+1,t.getDate())); }
+  function jdnOf(jy,jm,jd){ return j2d(jy,jm,jd); }
+  // day of week: شنبه=0 ... جمعه=6
+  function dowOfJDN(jdn){ return (jdn+1)%7; }
+  function fmt(jy,jm,jd){ return `${jd} ${monthNames[jm-1]} ${jy}`; }
+  function toISO(jy,jm,jd){
+    const g = d2g(j2d(jy,jm,jd));
+    return `${g.gy}-${String(g.gm).padStart(2,'0')}-${String(g.gd).padStart(2,'0')}`;
+  }
+  function fromISO(iso){
+    const [y,m,d] = iso.split('-').map(Number);
+    return d2j(g2d(y,m,d));
+  }
+  function parseDate(str){ return str ? fromISO(str) : null; }
+  function addDaysJ(jy,jm,jd,n){ return d2j(j2d(jy,jm,jd)+n); }
+  return {j2d,d2j,jalCal,monthLen,isLeap,todayJ,jdnOf,dowOfJDN,monthNames,dowNames,fullDow,fmt,toISO,fromISO,parseDate,addDaysJ};
+})();
+
+/* ==========================================================
+   2) ذخیره‌سازی و وضعیت برنامه
+   ========================================================== */
+const LS = { proj:'taskyar_projects_v1', task:'taskyar_tasks_v1' };
+let projects = [];
+let tasks = [];
+let selectedDateISO = null;   // برای تسک
+let calCursor = null;         // {jy,jm}
+let ui = { view:'dashboard', taskSort:'deadline' };
+
+function load(){
+  try{ projects = JSON.parse(localStorage.getItem(LS.proj) || '[]'); }catch(e){ projects=[]; }
+  try{ tasks = JSON.parse(localStorage.getItem(LS.task) || '[]'); }catch(e){ tasks=[]; }
+  // اطمینان از ساختار
+  projects = projects.filter(p=>p && p.id);
+  tasks = tasks.filter(t=>t && t.id);
+}
+function save(){
+  localStorage.setItem(LS.proj, JSON.stringify(projects));
+  localStorage.setItem(LS.task, JSON.stringify(tasks));
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+/* ==========================================================
+   3) ابزارهای نمایشی
+   ========================================================== */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+function toast(msg, type='ok'){
+  const el = $('#toast');
+  el.textContent = (type==='ok'?'✓ ':'⚠ ') + msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(()=> el.className='toast', 2600);
+}
+
+function priorityLabel(p){ return p==='high'?'بالا':p==='med'?'متوسط':'پایین'; }
+function priorityClass(p){ return p==='high'?'p-high':p==='med'?'p-med':'p-low'; }
+
+function daysUntil(iso){ // تا ددلاین چند روز مانده (از امروز)
+  if(!iso) return null;
+  const t = J.todayJ();
+  const j = J.fromISO(iso);
+  return J.jdnOf(j.jy,j.jm,j.jd) - J.jdnOf(t.jy,t.jm,t.jd);
+}
+function deadlineClass(t){
+  if(!t.deadline || t.done) return '';
+  const d = daysUntil(t.deadline);
+  if(d < 0) return 'over';
+  if(d <= 3) return 'soon';
+  return '';
+}
+function fmtDeadline(iso){
+  if(!iso) return '';
+  const j = J.fromISO(iso);
+  return J.fmt(j.jy,j.jm,j.jd);
+}
+function isOverdue(t){ return !t.done && t.deadline && daysUntil(t.deadline) < 0; }
+
+function getProject(id){ return projects.find(p=>p.id===id); }
+function projectName(id){ const p=getProject(id); return p? p.name : '—'; }
+function projectColor(id){ const p=getProject(id); return p? (p.color||'#6c8cff') : '#6c8cff'; }
+
+/* ==========================================================
+   4) ناوبری
+   ========================================================== */
+function switchView(v){
+  ui.view = v;
+  $$('.view').forEach(el=> el.classList.toggle('active', el.id==='view-'+v));
+  $$('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.view===v));
+  const titles = {
+    dashboard:['داشبورد','نمای کلی وضعیت کارها'],
+    projects:['پروژه‌ها','مدیریت و مشاهده پروژه‌ها'],
+    tasks:['تسک‌ها','همه تسک‌ها با فیلتر و مرتب‌سازی'],
+    calendar:['تقویم','نمای ددلاین‌ها در تقویم شمسی']
+  };
+  $('#pageTitle').innerHTML = titles[v][0] + ' <span>' + titles[v][1] + '</span>';
+  if(v==='dashboard') renderDashboard();
+  if(v==='projects') renderProjects();
+  if(v==='tasks') renderTasks();
+  if(v==='calendar') renderCalendar();
+}
+$$('.nav-btn').forEach(b=> b.addEventListener('click', ()=> switchView(b.dataset.view)));
+
+/* ==========================================================
+   5) داشبورد
+   ========================================================== */
+function renderDashboard(){
+  const now = J.todayJ();
+  const totalTasks = tasks.length;
+  const done = tasks.filter(t=>t.done).length;
+  const over = tasks.filter(isOverdue).length;
+  const pct = totalTasks? Math.round(done/totalTasks*100) : 0;
+
+  $('#sProj').textContent = projects.length;
+  $('#sProjSub').textContent = projects.length? 'در حال پیگیری' : 'هنوز پروژه‌ای نساخته‌اید';
+  $('#sTask').textContent = totalTasks;
+  $('#sTaskSub').textContent = totalTasks? `${totalTasks - done} تسک باز` : '—';
+  $('#sDone').textContent = done;
+  $('#sDoneSub').textContent = pct + '٪ تکمیل';
+  $('#sOver').textContent = over;
+  $('#sOverSub').textContent = over? 'نیاز به توجه فوری' : 'همه چیز مرتب است ✓';
+
+  // تسک‌های نزدیک / فوری: باز، دارای ددلاین، مرتب بر اساس ددلاین
+  const upcoming = tasks
+    .filter(t=> !t.done && t.deadline)
+    .sort((a,b)=> a.deadline.localeCompare(b.deadline))
+    .slice(0,8);
+  const uEl = $('#upcomingTasks');
+  if(!upcoming.length){
+    uEl.innerHTML = '<div class="empty"><div class="big">◷</div>تسک فوری یا دارای ددلاین وجود ندارد.</div>';
+  } else {
+    uEl.innerHTML = upcoming.map(taskItemHTML).join('');
+  }
+
+  // پیشرفت پروژه‌ها
+  const pEl = $('#projectProgress');
+  if(!projects.length){
+    pEl.innerHTML = '<div class="empty"><div class="big">◫</div>هنوز پروژه‌ای ندارید. با «＋ پروژه جدید» شروع کنید.</div>';
+  } else {
+    pEl.innerHTML = projects.map(p=>{
+      const pt = tasks.filter(t=>t.projectId===p.id);
+      const d = pt.filter(t=>t.done).length;
+      const pc = pt.length? Math.round(d/pt.length*100) : 0;
+      const cls = pc===100?'g': pc<30?'r':'';
+      return `<div class="proj-progress">
+        <div class="pp-head"><span class="name" style="color:${p.color||'var(--accent)'}">${esc(p.name)}</span><span class="pct">${d}/${pt.length} — ${pc}٪</span></div>
+        <div class="bar ${cls}"><i style="width:${pc}%"></i></div>
+      </div>`;
+    }).join('');
+  }
+  // به‌روزرسانی بج‌ها
+  $('#navProjCount').textContent = projects.length;
+  $('#navTaskCount').textContent = tasks.filter(t=>!t.done).length;
+}
+
+/* ==========================================================
+   6) تسک‌ها — رندر آیتم
+   ========================================================== */
+function taskItemHTML(t, opts={}){
+  const proj = getProject(t.projectId);
+  const dcl = deadlineClass(t);
+  const dlText = t.deadline ? fmtDeadline(t.deadline) : 'بدون ددلاین';
+  const d = t.deadline? daysUntil(t.deadline) : null;
+  let dExtra = '';
+  if(d!==null && !t.done){
+    if(d<0) dExtra = ` (${-d} روز گذشته)`;
+    else if(d===0) dExtra = ' (امروز)';
+    else dExtra = ` (${d} روز مانده)`;
+  }
+  return `<div class="task-item ${t.done?'done':''}" data-id="${t.id}">
+    <button class="chk" data-act="toggle" title="${t.done?'بازگرداندن':'انجام شد'}">✓</button>
+    <div class="t-body">
+      <div class="t-title">${esc(t.title)}</div>
+      <div class="t-meta">
+        ${proj?`<span class="proj-tag" style="border-color:${proj.color};color:${proj.color}">${esc(proj.name)}</span>`:''}
+        <span class="pill ${priorityClass(t.priority)}">${priorityLabel(t.priority)}</span>
+        ${t.deadline?`<span class="dl ${dcl}">◷ ${dlText}${dExtra}</span>`:`<span class="dl" style="color:var(--text3)">◷ بدون ددلاین</span>`}
+      </div>
+      ${t.desc?`<div style="font-size:12px;color:var(--text3);margin-top:7px;line-height:1.7">${esc(t.desc)}</div>`:''}
+    </div>
+    <div class="t-actions">
+      <button class="icon-btn" data-act="edit" title="ویرایش">✎</button>
+      <button class="icon-btn del" data-act="del" title="حذف">🗑</button>
+    </div>
+  </div>`;
+}
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ==========================================================
+   7) رندر پروژه‌ها
+   ========================================================== */
+function renderProjects(){
+  const q = $('#projSearch').value.trim().toLowerCase();
+  const list = projects.filter(p=> !q || p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q));
+  const grid = $('#projectsGrid');
+  if(!list.length){
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="big">◫</div>پروژه‌ای یافت نشد.<br>با دکمه «＋ پروژه جدید» اولین پروژه را بسازید.</div>';
+    return;
+  }
+  grid.innerHTML = list.map(p=>{
+    const pt = tasks.filter(t=>t.projectId===p.id);
+    const done = pt.filter(t=>t.done).length;
+    const over = pt.filter(isOverdue).length;
+    const pc = pt.length? Math.round(done/pt.length*100) : 0;
+    const cls = pc===100?'g': pc<30?'r':'';
+    return `<div class="proj-card" style="--pc:${p.color||'#6c8cff'}">
+      <div class="pc-head">
+        <div style="min-width:0">
+          <div class="pc-name">${esc(p.name)}</div>
+          ${p.desc?`<div class="pc-desc">${esc(p.desc)}</div>`:''}
+        </div>
+        <div class="t-actions">
+          <button class="icon-btn" data-pact="edit" data-id="${p.id}" title="ویرایش">✎</button>
+          <button class="icon-btn del" data-pact="del" data-id="${p.id}" title="حذف">🗑</button>
+        </div>
+      </div>
+      <div class="pc-stats">
+        <span><b>${pt.length}</b> تسک</span>
+        <span><b style="color:var(--green)">${done}</b> انجام‌شده</span>
+        ${over?`<span><b style="color:var(--red)">${over}</b> عقب‌افتاده</span>`:''}
+      </div>
+      <div class="pp-head" style="margin-bottom:6px"><span class="pct">پیشرفت</span><span class="pct">${pc}٪</span></div>
+      <div class="bar ${cls}"><i style="width:${pc}%"></i></div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" data-pact="addtask" data-id="${p.id}">＋ تسک</button>
+        <button class="btn btn-ghost btn-sm" data-pact="viewtasks" data-id="${p.id}">مشاهده تسک‌ها</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ==========================================================
+   8) رندر تسک‌ها (با فیلتر و مرتب‌سازی)
+   ========================================================== */
+function renderTasks(){
+  const q = $('#taskSearch').value.trim().toLowerCase();
+  const fp = $('#filterProject').value;
+  const fpr = $('#filterPriority').value;
+  const fs = $('#filterStatus').value;
+
+  // پر کردن سلکت پروژه
+  const sel = $('#filterProject');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">همه پروژه‌ها</option>' +
+    projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  sel.value = cur;
+
+  let list = tasks.slice();
+  if(q) list = list.filter(t=> t.title.toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q));
+  if(fp) list = list.filter(t=> t.projectId===fp);
+  if(fpr) list = list.filter(t=> t.priority===fpr);
+  if(fs==='done') list = list.filter(t=> t.done);
+  if(fs==='open') list = list.filter(t=> !t.done);
+  if(fs==='over') list = list.filter(isOverdue);
+
+  if(ui.taskSort==='deadline'){
+    list.sort((a,b)=>{
+      if(!a.deadline && !b.deadline) return 0;
+      if(!a.deadline) return 1;
+      if(!b.deadline) return -1;
+      return a.deadline.localeCompare(b.deadline);
+    });
+  } else if(ui.taskSort==='priority'){
+    const ord = {high:0,med:1,low:2};
+    list.sort((a,b)=> ord[a.priority]-ord[b.priority] || (a.deadline||'z').localeCompare(b.deadline||'z'));
+  } else {
+    list.sort((a,b)=> (b.created||'').localeCompare(a.created||''));
+  }
+
+  const el = $('#tasksList');
+  if(!list.length){
+    el.innerHTML = '<div class="empty"><div class="big">✓</div>تسکی با این فیلترها پیدا نشد.</div>';
+  } else {
+    el.innerHTML = list.map(t=>taskItemHTML(t)).join('');
+  }
+}
+
+/* ==========================================================
+   9) تقویم شمسی
+   ========================================================== */
+function renderCalendar(){
+  const t = J.todayJ();
+  if(!calCursor) calCursor = {jy:t.jy, jm:t.jm};
+  const {jy,jm} = calCursor;
+
+  $('#calMonthLabel').textContent = J.monthNames[jm-1] + ' ' + jy;
+
+  const firstJDN = J.jdnOf(jy,jm,1);
+  const startDow = J.dowOfJDN(firstJDN); // 0=شنبه
+  const len = J.monthLen(jy,jm);
+
+  // روزهای ماه قبل و بعد برای تکمیل شبکه
+  const prev = jm===1? {jy:jy-1,jm:12} : {jy,jm:jm-1};
+  const next = jm===12? {jy:jy+1,jm:1} : {jy,jm:jm+1};
+  const prevLen = J.monthLen(prev.jy,prev.jm);
+
+  // نقشه ددلاین‌ها: ISO -> [tasks]
+  const evMap = {};
+  tasks.forEach(tk=>{
+    if(!tk.deadline) return;
+    (evMap[tk.deadline] = evMap[tk.deadline] || []).push(tk);
+  });
+
+  let cells = [];
+  for(let i=startDow-1; i>=0; i--){
+    cells.push({jy:prev.jy,jm:prev.jm,jd:prevLen-i,other:true});
+  }
+  for(let d=1; d<=len; d++) cells.push({jy,jm,jd:d,other:false});
+  while(cells.length % 7 !== 0){
+    const d = cells.length - (startDow + len) + 1;
+    cells.push({jy:next.jy,jm:next.jm,jd:d,other:true});
+  }
+
+  const todayISO = J.toISO(t.jy,t.jm,t.jd);
+
+  let html = J.dowNames.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  html += cells.map(c=>{
+    const iso = J.toISO(c.jy,c.jm,c.jd);
+    const evs = evMap[iso] || [];
+    const isToday = iso === todayISO;
+    const shown = evs.slice(0,3).map(tk=>
+      `<div class="cal-ev ${tk.priority} ${tk.done?'done':''}" title="${esc(tk.title)}">${esc(tk.title)}</div>`
+    ).join('');
+    const more = evs.length>3? `<div class="cal-more">+${evs.length-3} بیشتر</div>` : '';
+    return `<div class="cal-day ${c.other?'other':''} ${isToday?'today':''}" data-iso="${iso}">
+      <div class="dnum"><span>${c.jd}</span>${evs.length?`<span style="font-size:9.5px;color:var(--text3)">${evs.length}</span>`:''}</div>
+      ${shown}${more}
+    </div>`;
+  }).join('');
+
+  $('#calGrid').innerHTML = html;
+}
+
+$('#calPrev').addEventListener('click', ()=>{
+  calCursor.jm--; if(calCursor.jm<1){calCursor.jm=12;calCursor.jy--;}
+  renderCalendar();
+});
+$('#calNext').addEventListener('click', ()=>{
+  calCursor.jm++; if(calCursor.jm>12){calCursor.jm=1;calCursor.jy++;}
+  renderCalendar();
+});
+$('#calToday').addEventListener('click', ()=>{
+  const t=J.todayJ(); calCursor={jy:t.jy,jm:t.jm}; renderCalendar();
+});
+
+/* ==========================================================
+   10) انتخاب‌گر تاریخ شمسی (Date Picker)
+   ========================================================== */
+const DP = {
+  jy:null, jm:null,
+  open(){ 
+    const cur = selectedDateISO? J.fromISO(selectedDateISO) : J.todayJ();
+    this.jy = cur.jy; this.jm = cur.jm;
+    $('#tDatePicker').classList.add('open');
+    this.render();
+  },
+  close(){ $('#tDatePicker').classList.remove('open'); },
+  render(){
+    const {jy,jm} = this;
+    $('#dpLabel').textContent = J.monthNames[jm-1] + ' ' + jy;
+    const firstJDN = J.jdnOf(jy,jm,1);
+    const startDow = J.dowOfJDN(firstJDN);
+    const len = J.monthLen(jy,jm);
+    const prev = jm===1? {jy:jy-1,jm:12} : {jy,jm:jm-1};
+    const next = jm===12? {jy:jy+1,jm:1} : {jy,jm:jm+1};
+    const prevLen = J.monthLen(prev.jy,prev.jm);
+
+    let cells = [];
+    for(let i=startDow-1;i>=0;i--) cells.push({jy:prev.jy,jm:prev.jm,jd:prevLen-i,other:true});
+    for(let d=1;d<=len;d++) cells.push({jy,jm,jd:d,other:false});
+    while(cells.length%7!==0){
+      const d = cells.length - (startDow+len) + 1;
+      cells.push({jy:next.jy,jm:next.jm,jd:d,other:true});
+    }
+    const t=J.todayJ();
+    const todayISO=J.toISO(t.jy,t.jm,t.jd);
+    let html = J.dowNames.map(d=>`<div class="dp-dow">${d}</div>`).join('');
+    html += cells.map(c=>{
+      const iso = J.toISO(c.jy,c.jm,c.jd);
+      const cls = [
+        'dp-day',
+        c.other?'other':'',
+        iso===selectedDateISO?'sel':'',
+        iso===todayISO?'today':''
+      ].join(' ');
+      return `<div class="${cls}" data-iso="${iso}">${c.jd}</div>`;
+    }).join('');
+    $('#dpGrid').innerHTML = html;
+  }
+};
+$('#dpPrev').addEventListener('click', e=>{e.stopPropagation(); DP.jm--; if(DP.jm<1){DP.jm=12;DP.jy--;} DP.render();});
+$('#dpNext').addEventListener('click', e=>{e.stopPropagation(); DP.jm++; if(DP.jm>12){DP.jm=1;DP.jy++;} DP.render();});
+$('#dpToday').addEventListener('click', e=>{
+  e.stopPropagation();
+  const t=J.todayJ(); selectedDateISO=J.toISO(t.jy,t.jm,t.jd);
+  $('#tDateText').textContent = J.fmt(t.jy,t.jm,t.jd);
+  DP.close();
+});
+$('#dpClear').addEventListener('click', e=>{
+  e.stopPropagation(); selectedDateISO=null;
+  $('#tDateText').textContent='انتخاب تاریخ'; DP.close();
+});
+$('#dpGrid').addEventListener('click', e=>{
+  const d = e.target.closest('.dp-day');
+  if(!d) return;
+  selectedDateISO = d.dataset.iso;
+  const j = J.fromISO(selectedDateISO);
+  $('#tDateText').textContent = J.fmt(j.jy,j.jm,j.jd);
+  DP.close();
+});
+$('#tDateDisplay').addEventListener('click', e=>{
+  e.stopPropagation();
+  $('#tDatePicker').classList.contains('open') ? DP.close() : DP.open();
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#tDatePicker') && !e.target.closest('#tDateDisplay')) DP.close();
+});
+
+/* ==========================================================
+   11) مودال‌ها
+   ========================================================== */
+function openModal(id){ $('#'+id).classList.add('open'); }
+function closeModal(id){ $('#'+id).classList.remove('open'); }
+$$('[data-close]').forEach(b=> b.addEventListener('click', ()=> closeModal(b.dataset.close)));
+$$('.overlay').forEach(o=> o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); }));
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') $$('.overlay.open').forEach(o=> o.classList.remove('open'));
+});
+
+let editingProjectId = null;
+let editingTaskId = null;
+
+/* ---- پروژه ---- */
+$('#btnNewProject').addEventListener('click', ()=>{
+  editingProjectId = null;
+  $('#pName').value=''; $('#pDesc').value=''; $('#pColor').value='#6c8cff';
+  openModal('modalProject'); $('#pName').focus();
+});
+$('#saveProject').addEventListener('click', ()=>{
+  const name = $('#pName').value.trim();
+  if(!name){ toast('نام پروژه را وارد کنید.','err'); $('#pName').focus(); return; }
+  if(editingProjectId){
+    const p = getProject(editingProjectId);
+    if(p){ p.name=name; p.desc=$('#pDesc').value.trim(); p.color=$('#pColor').value; }
+    toast('پروژه ویرایش شد.');
+  } else {
+    projects.push({id:uid(), name, desc:$('#pDesc').value.trim(), color:$('#pColor').value, created:new Date().toISOString()});
+    toast('پروژه ایجاد شد.');
+  }
+  save(); closeModal('modalProject'); refreshAll();
+});
+
+/* ---- تسک ---- */
+function fillTaskProjectSelect(preselect){
+  const sel = $('#tProject');
+  if(!projects.length){
+    sel.innerHTML = '<option value="">— ابتدا یک پروژه بسازید —</option>';
+    return;
+  }
+  sel.innerHTML = projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  if(preselect) sel.value = preselect;
+}
+$('#btnNewTask').addEventListener('click', ()=> openTaskModal(null));
+function openTaskModal(preselectProjectId){
+  editingTaskId = null;
+  $('#tTitle').value=''; $('#tDesc').value=''; $('#tPriority').value='med';
+  selectedDateISO=null; $('#tDateText').textContent='انتخاب تاریخ';
+  fillTaskProjectSelect(preselectProjectId);
+  if(!projects.length){
+    toast('اول باید یک پروژه بسازید.','err');
+    editingProjectId=null;
+    $('#pName').value=''; $('#pDesc').value=''; $('#pColor').value='#6c8cff';
+    closeModal('modalTask'); openModal('modalProject'); return;
+  }
+  openModal('modalTask'); $('#tTitle').focus();
+}
+$('#saveTask').addEventListener('click', ()=>{
+  const title = $('#tTitle').value.trim();
+  const projectId = $('#tProject').value;
+  if(!title){ toast('عنوان تسک را وارد کنید.','err'); $('#tTitle').focus(); return; }
+  if(!projectId){ toast('پروژه را انتخاب کنید.','err'); return; }
+  const data = {
+    title, projectId,
+    priority: $('#tPriority').value,
+    deadline: selectedDateISO,
+    desc: $('#tDesc').value.trim()
+  };
+  if(editingTaskId){
+    const t = tasks.find(x=>x.id===editingTaskId);
+    if(t) Object.assign(t, data);
+    toast('تسک ویرایش شد.');
+  } else {
+    tasks.push({id:uid(), done:false, created:new Date().toISOString(), ...data});
+    toast('تسک اضافه شد.');
+  }
+  save(); closeModal('modalTask'); refreshAll();
+});
+
+/* ---- حذف با تأیید ---- */
+let confirmCallback = null;
+function askConfirm(msg, cb){
+  $('#confirmMsg').textContent = msg;
+  confirmCallback = cb;
+  openModal('modalConfirm');
+}
+$('#confirmYes').addEventListener('click', ()=>{
+  if(confirmCallback) confirmCallback();
+  confirmCallback = null;
+  closeModal('modalConfirm');
+});
+
+/* ==========================================================
+   12) رویدادهای آیتم‌ها (event delegation)
+   ========================================================== */
+$('#tasksList').addEventListener('click', handleTaskClick);
+$('#upcomingTasks').addEventListener('click', handleTaskClick);
+function handleTaskClick(e){
+  const item = e.target.closest('.task-item');
+  if(!item) return;
+  const id = item.dataset.id;
+  const actBtn = e.target.closest('[data-act]');
+  const act = actBtn? actBtn.dataset.act : null;
+  if(act==='toggle'){
+    const t = tasks.find(x=>x.id===id);
+    if(t){ t.done = !t.done; save(); refreshAll(); }
+    return;
+  }
+  if(act==='edit'){ editTask(id); return; }
+  if(act==='del'){ delTask(id); return; }
+}
+function editTask(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  editingTaskId = id;
+  $('#tTitle').value = t.title;
+  $('#tDesc').value = t.desc||'';
+  $('#tPriority').value = t.priority;
+  selectedDateISO = t.deadline || null;
+  $('#tDateText').textContent = t.deadline? fmtDeadline(t.deadline) : 'انتخاب تاریخ';
+  fillTaskProjectSelect(t.projectId);
+  openModal('modalTask');
+  $('#tTitle').focus();
+}
+function delTask(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  askConfirm('آیا از حذف تسک «'+t.title+'» مطمئن هستید؟', ()=>{
+    tasks = tasks.filter(x=>x.id!==id);
+    save(); refreshAll(); toast('تسک حذف شد.');
+  });
+}
+
+$('#projectsGrid').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-pact]');
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const act = btn.dataset.pact;
+  if(act==='edit'){
+    const p = getProject(id); if(!p) return;
+    editingProjectId = id;
+    $('#pName').value=p.name; $('#pDesc').value=p.desc||''; $('#pColor').value=p.color||'#6c8cff';
+    openModal('modalProject'); $('#pName').focus();
+  } else if(act==='del'){
+    const p = getProject(id); if(!p) return;
+    const cnt = tasks.filter(t=>t.projectId===id).length;
+    askConfirm('حذف پروژه «'+p.name+'»'+(cnt?(' و '+cnt+' تسک مرتبط'):'')+'؟ این کار برگشت‌پذیر نیست.', ()=>{
+      projects = projects.filter(x=>x.id!==id);
+      tasks = tasks.filter(t=>t.projectId!==id);
+      save(); refreshAll(); toast('پروژه و تسک‌هایش حذف شد.');
+    });
+  } else if(act==='addtask'){
+    openTaskModal(id);
+  } else if(act==='viewtasks'){
+    $('#filterProject').value = id;
+    $('#taskSearch').value=''; $('#filterPriority').value=''; $('#filterStatus').value='';
+    switchView('tasks'); renderTasks();
+  }
+});
+
+/* ==========================================================
+   13) فیلترها و جستجو
+   ========================================================== */
+$('#projSearch').addEventListener('input', renderProjects);
+$('#taskSearch').addEventListener('input', renderTasks);
+$('#filterProject').addEventListener('change', renderTasks);
+$('#filterPriority').addEventListener('change', renderTasks);
+$('#filterStatus').addEventListener('change', renderTasks);
+$('#taskSortChips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  ui.taskSort = chip.dataset.sort;
+  $$('#taskSortChips .chip').forEach(c=>c.classList.toggle('active', c===chip));
+  renderTasks();
+});
+
+/* کلیک روی روز تقویم → فیلتر تسک‌های همان روز */
+$('#calGrid').addEventListener('click', e=>{
+  const day = e.target.closest('.cal-day');
+  if(!day) return;
+  const iso = day.dataset.iso;
+  const list = tasks.filter(t=>t.deadline===iso);
+  if(!list.length){ toast('در این روز تسکی نیست.'); return; }
+  switchView('tasks');
+  $('#taskSearch').value=''; $('#filterProject').value=''; $('#filterPriority').value=''; $('#filterStatus').value='';
+  const el = $('#tasksList');
+  el.innerHTML = '<div style="font-size:13px;color:var(--text2);margin-bottom:12px">تسک‌های روز '+fmtDeadline(iso)+'</div>' +
+    list.map(t=>taskItemHTML(t)).join('');
+});
+
+/* ==========================================================
+   14) refreshAll
+   ========================================================== */
+function refreshAll(){
+  renderDashboard();
+  if(ui.view==='projects') renderProjects();
+  if(ui.view==='tasks') renderTasks();
+  if(ui.view==='calendar') renderCalendar();
+  $('#navProjCount').textContent = projects.length;
+  $('#navTaskCount').textContent = tasks.filter(t=>!t.done).length;
+}
+
+/* ==========================================================
+   15) شروع
+   ========================================================== */
+function init(){
+  load();
+  const t = J.todayJ();
+  $('#todayStr').textContent = J.fullDow[J.dowOfJDN(J.jdnOf(t.jy,t.jm,t.jd))] + '، ' + J.fmt(t.jy,t.jm,t.jd);
+  renderDashboard();
+  refreshAll();
+  switchView('dashboard');
+  $('#navProjCount').textContent = projects.length;
+  $('#navTaskCount').textContent = tasks.filter(t=>!t.done).length;
+}
+init();
+</script>
+</body>
+</html>
