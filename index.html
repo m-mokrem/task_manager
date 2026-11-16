@@ -54,6 +54,19 @@
     min-width:20px;height:20px;border-radius:20px;display:grid;place-items:center;padding:0 6px
   }
   .side-sep{height:1px;background:var(--border);margin:10px 0}
+  .side-backup{
+    display:flex;gap:8px;margin-top:4px;padding:0 4px;
+  }
+  .side-backup button{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    padding:9px 8px;border-radius:9px;font-size:12px;font-weight:600;
+    background:var(--bg3);border:1px solid var(--border);color:var(--text2);transition:.15s;
+  }
+  .side-backup button:hover{border-color:var(--border2);color:var(--text);background:var(--bg4)}
+  .side-backup button.imp{border-color:rgba(63,185,80,.35);color:#56d364}
+  .side-backup button.imp:hover{background:rgba(63,185,80,.12)}
+  .side-backup button.exp{border-color:rgba(108,140,255,.35);color:#a9bcff}
+  .side-backup button.exp:hover{background:rgba(108,140,255,.12)}
   .side-foot{margin-top:auto;font-size:11px;color:var(--text3);padding:8px;line-height:1.7}
 
   .main{flex:1;padding:26px 30px 60px;min-width:0}
@@ -256,7 +269,8 @@
   .toast{
     position:fixed;bottom:24px;left:24px;background:#1f2937;border:1px solid var(--border2);
     padding:13px 20px;border-radius:12px;font-size:13px;box-shadow:var(--shadow);z-index:200;
-    transform:translateY(90px);opacity:0;transition:.3s;display:flex;align-items:center;gap:9px
+    transform:translateY(90px);opacity:0;transition:.3s;display:flex;align-items:center;gap:9px;
+    max-width:calc(100vw - 48px);white-space:pre-line;line-height:1.7
   }
   .toast.show{transform:none;opacity:1}
   .toast.ok{border-color:rgba(63,185,80,.5)} .toast.err{border-color:rgba(248,81,73,.5)}
@@ -265,6 +279,7 @@
     .sidebar{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;padding:12px;gap:6px;align-items:center}
     .brand{padding:0 8px} .brand small{display:none}
     .side-sep,.side-foot{display:none}
+    .side-backup{margin:0;padding:0;flex-shrink:0}
     .nav-btn{white-space:nowrap;width:auto;padding:9px 13px}
     .main{padding:18px 14px 50px}
     .field-row{grid-template-columns:1fr}
@@ -286,6 +301,11 @@
     <button class="nav-btn" data-view="tasks"><span class="ico">✓</span> تسک‌ها <span class="badge" id="navTaskCount">0</span></button>
     <button class="nav-btn" data-view="calendar"><span class="ico">▤</span> تقویم</button>
     <div class="side-sep"></div>
+    <div class="side-backup">
+      <button class="exp" id="btnExport" title="دانلود نسخه پشتیبان">⤓ خروجی</button>
+      <button class="imp" id="btnImport" title="بازیابی از فایل">⤒ ورودی</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none">
     <div class="side-foot">
       تاریخ امروز:<br><b id="todayStr" style="color:var(--text2)"></b>
     </div>
@@ -456,13 +476,13 @@
   </div>
 </div>
 
-<!-- ========== MODAL: CONFIRM DELETE ========== -->
+<!-- ========== MODAL: CONFIRM ========== -->
 <div class="overlay" id="modalConfirm">
-  <div class="modal" style="max-width:400px">
-    <h3>⚠ حذف</h3>
-    <p id="confirmMsg" style="font-size:13.5px;color:var(--text2);line-height:1.9;margin-bottom:6px"></p>
+  <div class="modal" style="max-width:420px">
+    <h3>⚠ تأیید</h3>
+    <p id="confirmMsg" style="font-size:13.5px;color:var(--text2);line-height:2;margin-bottom:6px;white-space:pre-line"></p>
     <div class="modal-foot">
-      <button class="btn btn-danger" id="confirmYes">بله، حذف کن</button>
+      <button class="btn btn-danger" id="confirmYes">بله، ادامه</button>
       <button class="btn btn-ghost" data-close="modalConfirm">انصراف</button>
     </div>
   </div>
@@ -535,7 +555,6 @@ const J = (() => {
   function isLeap(jy){ return jalCal(jy).leap === 0; }
   function todayJ(){ const t = new Date(); return d2j(g2d(t.getFullYear(),t.getMonth()+1,t.getDate())); }
   function jdnOf(jy,jm,jd){ return j2d(jy,jm,jd); }
-  // day of week: شنبه=0 ... جمعه=6
   function dowOfJDN(jdn){ return (jdn+1)%7; }
   function fmt(jy,jm,jd){ return `${jd} ${monthNames[jm-1]} ${jy}`; }
   function toISO(jy,jm,jd){
@@ -546,9 +565,7 @@ const J = (() => {
     const [y,m,d] = iso.split('-').map(Number);
     return d2j(g2d(y,m,d));
   }
-  function parseDate(str){ return str ? fromISO(str) : null; }
-  function addDaysJ(jy,jm,jd,n){ return d2j(j2d(jy,jm,jd)+n); }
-  return {j2d,d2j,jalCal,monthLen,isLeap,todayJ,jdnOf,dowOfJDN,monthNames,dowNames,fullDow,fmt,toISO,fromISO,parseDate,addDaysJ};
+  return {j2d,d2j,jalCal,monthLen,isLeap,todayJ,jdnOf,dowOfJDN,monthNames,dowNames,fullDow,fmt,toISO,fromISO};
 })();
 
 /* ==========================================================
@@ -557,14 +574,13 @@ const J = (() => {
 const LS = { proj:'taskyar_projects_v1', task:'taskyar_tasks_v1' };
 let projects = [];
 let tasks = [];
-let selectedDateISO = null;   // برای تسک
-let calCursor = null;         // {jy,jm}
+let selectedDateISO = null;
+let calCursor = null;
 let ui = { view:'dashboard', taskSort:'deadline' };
 
 function load(){
   try{ projects = JSON.parse(localStorage.getItem(LS.proj) || '[]'); }catch(e){ projects=[]; }
   try{ tasks = JSON.parse(localStorage.getItem(LS.task) || '[]'); }catch(e){ tasks=[]; }
-  // اطمینان از ساختار
   projects = projects.filter(p=>p && p.id);
   tasks = tasks.filter(t=>t && t.id);
 }
@@ -585,13 +601,13 @@ function toast(msg, type='ok'){
   el.textContent = (type==='ok'?'✓ ':'⚠ ') + msg;
   el.className = 'toast show ' + type;
   clearTimeout(el._t);
-  el._t = setTimeout(()=> el.className='toast', 2600);
+  el._t = setTimeout(()=> el.className='toast', 3200);
 }
 
 function priorityLabel(p){ return p==='high'?'بالا':p==='med'?'متوسط':'پایین'; }
 function priorityClass(p){ return p==='high'?'p-high':p==='med'?'p-med':'p-low'; }
 
-function daysUntil(iso){ // تا ددلاین چند روز مانده (از امروز)
+function daysUntil(iso){
   if(!iso) return null;
   const t = J.todayJ();
   const j = J.fromISO(iso);
@@ -614,6 +630,8 @@ function isOverdue(t){ return !t.done && t.deadline && daysUntil(t.deadline) < 0
 function getProject(id){ return projects.find(p=>p.id===id); }
 function projectName(id){ const p=getProject(id); return p? p.name : '—'; }
 function projectColor(id){ const p=getProject(id); return p? (p.color||'#6c8cff') : '#6c8cff'; }
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ==========================================================
    4) ناوبری
@@ -640,7 +658,6 @@ $$('.nav-btn').forEach(b=> b.addEventListener('click', ()=> switchView(b.dataset
    5) داشبورد
    ========================================================== */
 function renderDashboard(){
-  const now = J.todayJ();
   const totalTasks = tasks.length;
   const done = tasks.filter(t=>t.done).length;
   const over = tasks.filter(isOverdue).length;
@@ -655,7 +672,6 @@ function renderDashboard(){
   $('#sOver').textContent = over;
   $('#sOverSub').textContent = over? 'نیاز به توجه فوری' : 'همه چیز مرتب است ✓';
 
-  // تسک‌های نزدیک / فوری: باز، دارای ددلاین، مرتب بر اساس ددلاین
   const upcoming = tasks
     .filter(t=> !t.done && t.deadline)
     .sort((a,b)=> a.deadline.localeCompare(b.deadline))
@@ -667,7 +683,6 @@ function renderDashboard(){
     uEl.innerHTML = upcoming.map(taskItemHTML).join('');
   }
 
-  // پیشرفت پروژه‌ها
   const pEl = $('#projectProgress');
   if(!projects.length){
     pEl.innerHTML = '<div class="empty"><div class="big">◫</div>هنوز پروژه‌ای ندارید. با «＋ پروژه جدید» شروع کنید.</div>';
@@ -683,7 +698,6 @@ function renderDashboard(){
       </div>`;
     }).join('');
   }
-  // به‌روزرسانی بج‌ها
   $('#navProjCount').textContent = projects.length;
   $('#navTaskCount').textContent = tasks.filter(t=>!t.done).length;
 }
@@ -691,7 +705,7 @@ function renderDashboard(){
 /* ==========================================================
    6) تسک‌ها — رندر آیتم
    ========================================================== */
-function taskItemHTML(t, opts={}){
+function taskItemHTML(t){
   const proj = getProject(t.projectId);
   const dcl = deadlineClass(t);
   const dlText = t.deadline ? fmtDeadline(t.deadline) : 'بدون ددلاین';
@@ -719,8 +733,6 @@ function taskItemHTML(t, opts={}){
     </div>
   </div>`;
 }
-
-function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ==========================================================
    7) رندر پروژه‌ها
@@ -766,7 +778,7 @@ function renderProjects(){
 }
 
 /* ==========================================================
-   8) رندر تسک‌ها (با فیلتر و مرتب‌سازی)
+   8) رندر تسک‌ها
    ========================================================== */
 function renderTasks(){
   const q = $('#taskSearch').value.trim().toLowerCase();
@@ -774,7 +786,6 @@ function renderTasks(){
   const fpr = $('#filterPriority').value;
   const fs = $('#filterStatus').value;
 
-  // پر کردن سلکت پروژه
   const sel = $('#filterProject');
   const cur = sel.value;
   sel.innerHTML = '<option value="">همه پروژه‌ها</option>' +
@@ -812,25 +823,21 @@ function renderTasks(){
 }
 
 /* ==========================================================
-   9) تقویم شمسی
+   9) تقویم
    ========================================================== */
 function renderCalendar(){
   const t = J.todayJ();
   if(!calCursor) calCursor = {jy:t.jy, jm:t.jm};
   const {jy,jm} = calCursor;
-
   $('#calMonthLabel').textContent = J.monthNames[jm-1] + ' ' + jy;
 
   const firstJDN = J.jdnOf(jy,jm,1);
-  const startDow = J.dowOfJDN(firstJDN); // 0=شنبه
+  const startDow = J.dowOfJDN(firstJDN);
   const len = J.monthLen(jy,jm);
-
-  // روزهای ماه قبل و بعد برای تکمیل شبکه
   const prev = jm===1? {jy:jy-1,jm:12} : {jy,jm:jm-1};
   const next = jm===12? {jy:jy+1,jm:1} : {jy,jm:jm+1};
   const prevLen = J.monthLen(prev.jy,prev.jm);
 
-  // نقشه ددلاین‌ها: ISO -> [tasks]
   const evMap = {};
   tasks.forEach(tk=>{
     if(!tk.deadline) return;
@@ -838,9 +845,7 @@ function renderCalendar(){
   });
 
   let cells = [];
-  for(let i=startDow-1; i>=0; i--){
-    cells.push({jy:prev.jy,jm:prev.jm,jd:prevLen-i,other:true});
-  }
+  for(let i=startDow-1; i>=0; i--) cells.push({jy:prev.jy,jm:prev.jm,jd:prevLen-i,other:true});
   for(let d=1; d<=len; d++) cells.push({jy,jm,jd:d,other:false});
   while(cells.length % 7 !== 0){
     const d = cells.length - (startDow + len) + 1;
@@ -848,7 +853,6 @@ function renderCalendar(){
   }
 
   const todayISO = J.toISO(t.jy,t.jm,t.jd);
-
   let html = J.dowNames.map(d=>`<div class="cal-dow">${d}</div>`).join('');
   html += cells.map(c=>{
     const iso = J.toISO(c.jy,c.jm,c.jd);
@@ -863,10 +867,8 @@ function renderCalendar(){
       ${shown}${more}
     </div>`;
   }).join('');
-
   $('#calGrid').innerHTML = html;
 }
-
 $('#calPrev').addEventListener('click', ()=>{
   calCursor.jm--; if(calCursor.jm<1){calCursor.jm=12;calCursor.jy--;}
   renderCalendar();
@@ -880,11 +882,11 @@ $('#calToday').addEventListener('click', ()=>{
 });
 
 /* ==========================================================
-   10) انتخاب‌گر تاریخ شمسی (Date Picker)
+   10) انتخاب‌گر تاریخ شمسی
    ========================================================== */
 const DP = {
   jy:null, jm:null,
-  open(){ 
+  open(){
     const cur = selectedDateISO? J.fromISO(selectedDateISO) : J.todayJ();
     this.jy = cur.jy; this.jm = cur.jm;
     $('#tDatePicker').classList.add('open');
@@ -913,12 +915,7 @@ const DP = {
     let html = J.dowNames.map(d=>`<div class="dp-dow">${d}</div>`).join('');
     html += cells.map(c=>{
       const iso = J.toISO(c.jy,c.jm,c.jd);
-      const cls = [
-        'dp-day',
-        c.other?'other':'',
-        iso===selectedDateISO?'sel':'',
-        iso===todayISO?'today':''
-      ].join(' ');
+      const cls = ['dp-day', c.other?'other':'', iso===selectedDateISO?'sel':'', iso===todayISO?'today':''].join(' ');
       return `<div class="${cls}" data-iso="${iso}">${c.jd}</div>`;
     }).join('');
     $('#dpGrid').innerHTML = html;
@@ -1032,7 +1029,7 @@ $('#saveTask').addEventListener('click', ()=>{
   save(); closeModal('modalTask'); refreshAll();
 });
 
-/* ---- حذف با تأیید ---- */
+/* ---- تأیید ---- */
 let confirmCallback = null;
 function askConfirm(msg, cb){
   $('#confirmMsg').textContent = msg;
@@ -1046,7 +1043,7 @@ $('#confirmYes').addEventListener('click', ()=>{
 });
 
 /* ==========================================================
-   12) رویدادهای آیتم‌ها (event delegation)
+   12) رویدادهای آیتم‌ها
    ========================================================== */
 $('#tasksList').addEventListener('click', handleTaskClick);
 $('#upcomingTasks').addEventListener('click', handleTaskClick);
@@ -1129,7 +1126,6 @@ $('#taskSortChips').addEventListener('click', e=>{
   renderTasks();
 });
 
-/* کلیک روی روز تقویم → فیلتر تسک‌های همان روز */
 $('#calGrid').addEventListener('click', e=>{
   const day = e.target.closest('.cal-day');
   if(!day) return;
@@ -1144,7 +1140,83 @@ $('#calGrid').addEventListener('click', e=>{
 });
 
 /* ==========================================================
-   14) refreshAll
+   14) بک‌آپ دستی — خروجی و ورودی JSON
+   ========================================================== */
+$('#btnExport').addEventListener('click', ()=>{
+  if(!projects.length && !tasks.length){
+    toast('داده‌ای برای خروجی وجود ندارد.','err');
+    return;
+  }
+  const t = J.todayJ();
+  const backup = {
+    app:'taskyar', version:1,
+    exportedAt: new Date().toISOString(),
+    exportedAtJalali: J.fmt(t.jy,t.jm,t.jd),
+    projects, tasks
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `taskyar-backup-${t.jy}-${String(t.jm).padStart(2,'0')}-${String(t.jd).padStart(2,'0')}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+  toast(`نسخه پشتیبان دانلود شد (${projects.length} پروژه، ${tasks.length} تسک).`);
+});
+
+$('#btnImport').addEventListener('click', ()=> $('#importFile').click());
+
+$('#importFile').addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let data;
+    try{ data = JSON.parse(reader.result); }
+    catch(err){ toast('فایل JSON معتبر نیست.','err'); return; }
+
+    if(!data || !Array.isArray(data.projects) || !Array.isArray(data.tasks)){
+      toast('ساختار فایل پشتیبان شناسایی نشد.','err');
+      return;
+    }
+    const inProjects = data.projects.filter(p=>p && p.id && p.name);
+    const inTasks = data.tasks.filter(t=>t && t.id && t.title && t.projectId);
+    const projIds = new Set(inProjects.map(p=>p.id));
+    const orphan = inTasks.filter(t=> !projIds.has(t.projectId)).length;
+    const cleanTasks = inTasks.filter(t=> projIds.has(t.projectId));
+
+    const when = data.exportedAtJalali ? `\nتاریخ خروجی فایل: ${data.exportedAtJalali}` : '';
+    const msg = `بازیابی از فایل:${when}\n\n` +
+      `${inProjects.length} پروژه و ${cleanTasks.length} تسک جایگزین داده‌های فعلی می‌شود.` +
+      (orphan? `\n(${orphan} تسک بدون پروژه معتبر نادیده گرفته می‌شود.)`:'') +
+      `\n\nداده‌های فعلی (${projects.length} پروژه، ${tasks.length} تسک) حذف خواهند شد.\nادامه می‌دهید؟`;
+
+    askConfirm(msg, ()=>{
+      projects = inProjects.map(p=>({
+        id:String(p.id), name:String(p.name), desc:p.desc||'',
+        color:p.color||'#6c8cff', created:p.created||new Date().toISOString()
+      }));
+      tasks = cleanTasks.map(t=>({
+        id:String(t.id), title:String(t.title), projectId:String(t.projectId),
+        priority:['high','med','low'].includes(t.priority)?t.priority:'med',
+        deadline: t.deadline && /^\d{4}-\d{2}-\d{2}$/.test(t.deadline) ? t.deadline : null,
+        desc:t.desc||'', done:!!t.done,
+        created:t.created||new Date().toISOString()
+      }));
+      save(); refreshAll();
+      toast(`بازیابی انجام شد: ${projects.length} پروژه، ${tasks.length} تسک.`);
+    });
+  };
+  reader.onerror = ()=> toast('خواندن فایل ناموفق بود.','err');
+  reader.readAsText(file, 'utf-8');
+});
+
+/* ==========================================================
+   15) refreshAll و شروع
    ========================================================== */
 function refreshAll(){
   renderDashboard();
@@ -1155,18 +1227,12 @@ function refreshAll(){
   $('#navTaskCount').textContent = tasks.filter(t=>!t.done).length;
 }
 
-/* ==========================================================
-   15) شروع
-   ========================================================== */
 function init(){
   load();
   const t = J.todayJ();
   $('#todayStr').textContent = J.fullDow[J.dowOfJDN(J.jdnOf(t.jy,t.jm,t.jd))] + '، ' + J.fmt(t.jy,t.jm,t.jd);
-  renderDashboard();
   refreshAll();
   switchView('dashboard');
-  $('#navProjCount').textContent = projects.length;
-  $('#navTaskCount').textContent = tasks.filter(t=>!t.done).length;
 }
 init();
 </script>
